@@ -22,34 +22,47 @@ const PrefillModal: React.FC<PrefillModalProps> = ({
   const [selectedSource, setSelectedSource] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
 
-  /** Global properties dynamically defined */
+  /** 
+   * Defines globally available properties.
+   * These fields are outside the DAG structure and available globally.
+   */
   const globalData: Record<string, string[]> = {
     "Action Properties": ["clientName"],
     "Client Organisation Properties": ["clientEmail"],
   };
 
-  /** Search filter for form and global fields */
+  /** 
+   * Function to filter items based on the search term.
+   * Checks if the label includes the search term (case-insensitive).
+   */
   const filterItem = (label: string) =>
     label.toLowerCase().includes(searchTerm.toLowerCase());
 
-  /** Handle selection of items, ensuring only fields are selectable */
+  /**
+   * Handles selection of items in the tree view.
+   * Ensures that only form fields can be selected (not form names or global categories).
+   */
   const handleSelect = (_: React.SyntheticEvent, itemId: string | null) => {
     if (!itemId) {
       setSelectedSource(null);
       return;
     }
 
+    // Check if the clicked item is a form node (not selectable)
     const isFormNode = dependencyForms.some((form) => form.id === itemId);
     const isGlobalCategory = Object.keys(globalData).includes(itemId);
 
     if (isFormNode || isGlobalCategory) {
       setSelectedSource(null); // Prevent selection of form names or global categories
     } else {
-      setSelectedSource(itemId); // Select only actual fields
+      setSelectedSource(itemId); // Allow only field selection
     }
   };
 
-  /** Check if anything is matching (global + form fields) */
+  /**
+   * Filters global properties based on the search input.
+   * Only includes categories where at least one field matches.
+   */
   const filteredGlobalData = Object.entries(globalData).reduce(
     (acc, [category, fields]) => {
       const matchingFields = fields.filter(filterItem);
@@ -61,6 +74,10 @@ const PrefillModal: React.FC<PrefillModalProps> = ({
     {} as Record<string, string[]>
   );
 
+  /**
+   * Filters forms based on the search input.
+   * Only includes forms where at least one field matches.
+   */
   const filteredForms = dependencyForms
     .map((form) => ({
       ...form,
@@ -68,6 +85,7 @@ const PrefillModal: React.FC<PrefillModalProps> = ({
     }))
     .filter((form) => form.filteredFields.length > 0);
 
+  /** Determines whether to show "No match found" */
   const showNoMatch = Object.keys(filteredGlobalData).length === 0 && filteredForms.length === 0;
 
   return (
@@ -82,6 +100,7 @@ const PrefillModal: React.FC<PrefillModalProps> = ({
         <div style={styles.bottomSection}>
           <div style={styles.label}>Available data</div>
 
+          {/* Search input with an icon */}
           <input
             type="text"
             placeholder="🔍 Search..."
@@ -175,7 +194,6 @@ const styles: Record<string, React.CSSProperties> = {
   topSection: {
     backgroundColor: '#fff',
     padding: '1rem',
-    display:'flex'
   },
   title: {
     margin: 0,
@@ -226,37 +244,5 @@ const styles: Record<string, React.CSSProperties> = {
     justifyContent: 'flex-end',
     gap: '0.5rem',
     flexWrap: 'wrap',
-  },
-  selectButton: {
-    backgroundColor: '#4664F5',
-    color: '#fff',
-    border: 'none',
-    borderRadius: '0.5rem',
-    padding: '0.5rem 1rem',
-    cursor: 'pointer',
-    fontSize: '0.85rem',
-    minWidth: '5rem',
-    textAlign: 'center',
-  },
-  selectDisabled: {
-    backgroundColor: '#eee',
-    color: '#999',
-    border: 'none',
-    borderRadius: '0.5rem',
-    padding: '0.5rem 1rem',
-    fontSize: '0.85rem',
-    cursor: 'default',
-    minWidth: '5rem',
-    textAlign: 'center',
-  },
-  cancelButton: {
-    backgroundColor: '#fff',
-    border: '1px solid #ddd',
-    borderRadius: '0.5rem',
-    padding: '0.5rem 1rem',
-    cursor: 'pointer',
-    fontSize: '0.85rem',
-    minWidth: '5rem',
-    textAlign: 'center',
-  },
+  }
 };

@@ -1,4 +1,4 @@
-import React, { FC, useCallback } from 'react';
+import React, { FC, useCallback, useMemo } from 'react';
 import {
   ReactFlow,
   Controls,
@@ -18,13 +18,11 @@ interface GraphProps {
   onNodeSelect: (nodeId: string) => void;
 }
 
-// Register our custom node under the "formNode" type
-const nodeTypes = {
-  formNode: FormNode,
-};
-
 const Graph: FC<GraphProps> = ({ nodes, edges, onNodeSelect }) => {
-  // Handle node clicks. We explicitly annotate "node" as Node<any> to satisfy type expectations.
+  // Memoizing node types to prevent unnecessary re-renders
+  const nodeTypes = useMemo(() => ({ formNode: FormNode }), []);
+
+  // Handles node clicks and triggers selection
   const handleNodeClick = useCallback(
     (_: React.MouseEvent, node: Node<any>) => {
       onNodeSelect(node.id);
@@ -33,9 +31,8 @@ const Graph: FC<GraphProps> = ({ nodes, edges, onNodeSelect }) => {
   );
 
   return (
-    <div style={{ width: '100%', height: '100%' }}>
+    <div style={styles.graphContainer}>
       <ReactFlow
-        // Cast nodes and edges to match the expected types
         nodes={nodes as Node<any>[]}
         edges={edges as Edge<any>[]}
         nodeTypes={nodeTypes}
@@ -46,9 +43,15 @@ const Graph: FC<GraphProps> = ({ nodes, edges, onNodeSelect }) => {
           type: 'smoothstep',
           style: { stroke: '#9CA8B3' },
         }}
+        panOnScroll
+        zoomOnScroll
+        zoomOnDoubleClick
       >
         <Controls />
-        <MiniMap />
+        <MiniMap
+          nodeColor={() => '#4664F5'} // Default node color in MiniMap
+          maskColor="rgba(72, 76, 122, 0.1)" // Subtle overlay color
+        />
         <Background />
       </ReactFlow>
     </div>
@@ -56,3 +59,15 @@ const Graph: FC<GraphProps> = ({ nodes, edges, onNodeSelect }) => {
 };
 
 export default Graph;
+
+// Styles for Graph Container
+const styles: Record<string, React.CSSProperties> = {
+  graphContainer: {
+    width: '100%',
+    height: '100vh', // Ensures the graph takes full height
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#F7F9FC', // Light gray background for a cleaner look
+  },
+};

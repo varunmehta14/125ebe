@@ -2,8 +2,8 @@ import React, { FC, useState, useEffect } from 'react';
 import { Switch } from '@mui/material';
 import PrefillModal from './PrefillModal';
 import StorageIcon from '@mui/icons-material/Storage';
-import { NodeData, EdgeData } from '../types';
 import CancelTwoToneIcon from '@mui/icons-material/CancelTwoTone';
+import { NodeData, EdgeData } from '../types';
 
 interface PrefillPanelProps {
   nodeId: string;
@@ -25,7 +25,10 @@ const PrefillPanel: FC<PrefillPanelProps> = ({
   const [dependencyForms, setDependencyForms] = useState<NodeData[]>([]);
   const [isPanelOpen, setIsPanelOpen] = useState(true);
 
-  // BFS/DFS to find direct & transitive dependencies
+  /**
+   * Traverses the DAG using BFS/DFS to find direct & transitive dependencies.
+   * This function helps identify which forms can be used for prefill.
+   */
   useEffect(() => {
     const getDependencies = (
       currentNodeId: string,
@@ -51,14 +54,17 @@ const PrefillPanel: FC<PrefillPanelProps> = ({
     setDependencyForms(uniqueDeps);
   }, [nodeId, nodes, edges]);
 
-  // Find the selected node
+  // Find the selected node in the graph
   const node = nodes.find((n) => n.id === nodeId);
   if (!node) return null;
 
   const formFields = node.data.formFields || [];
   const prefillConfig = node.data.prefillConfig || {};
 
-  // Clear a field's prefill
+  /**
+   * Clears the prefill configuration for a specific field.
+   * Updates the state and removes the mapped value.
+   */
   const handleClear = (fieldName: string) => {
     setNodes((prev) =>
       prev.map((n) =>
@@ -78,13 +84,17 @@ const PrefillPanel: FC<PrefillPanelProps> = ({
     );
   };
 
-  // Open the modal for a field with no prefill
+  /**
+   * Opens the prefill selection modal for a given field.
+   */
   const handleOpenModal = (fieldName: string) => {
     setSelectedField(fieldName);
     setShowModal(true);
   };
 
-  // Save the chosen prefill value
+  /**
+   * Saves the chosen prefill value and updates the node data.
+   */
   const handleSave = (sourceValue: string | null) => {
     if (!selectedField) return;
     setNodes((prev) =>
@@ -107,14 +117,17 @@ const PrefillPanel: FC<PrefillPanelProps> = ({
     setSelectedField(null);
   };
 
-  // For displaying "Form A.email" etc. instead of raw IDs
+  /**
+   * Retrieves the label of a form by its ID.
+   * This ensures that instead of showing raw IDs, we display human-readable labels.
+   */
   const getFormLabel = (formId: string): string => {
     const foundNode = nodes.find((n) => n.id === formId);
     return foundNode ? foundNode.data.label : formId;
   };
 
   if (!isPanelOpen) {
-    // If toggle is off, hide panel content
+    // If the toggle is off, hide the entire panel
     return null;
   }
 
@@ -122,19 +135,20 @@ const PrefillPanel: FC<PrefillPanelProps> = ({
     <div style={styles.panel}>
       <div style={styles.headerRow}>
         <h4 style={{ margin: 0 }}>Prefill</h4>
-       
       </div>
-    <div style={{display:"flex", justifyContent: "space-between", alignItems: "center"}}>
-      <p style={styles.subtitle}>Prefill fields for this form</p>
-      <Switch
+
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+        <p style={styles.subtitle}>Prefill fields for this form</p>
+        <Switch
           checked={isPanelOpen}
           onChange={() => {
             setIsPanelOpen(!isPanelOpen);
-            if (isPanelOpen) onClose(); // Close the entire panel if turning off
+            if (isPanelOpen) onClose(); // Close the entire panel if toggling off
           }}
         />
-  </div>
-      {/* Fields list */}
+      </div>
+
+      {/* List of form fields */}
       <div style={{ marginTop: '1rem' }}>
         {formFields.map((fieldName) => {
           const configValue = prefillConfig[fieldName];
@@ -150,7 +164,6 @@ const PrefillPanel: FC<PrefillPanelProps> = ({
           return (
             <div
               key={fieldName}
-              // If unmapped, the entire row is clickable to open the modal
               onClick={!isMapped ? () => handleOpenModal(fieldName) : undefined}
               style={{
                 ...styles.fieldRow,
@@ -158,8 +171,7 @@ const PrefillPanel: FC<PrefillPanelProps> = ({
                 cursor: isMapped ? 'default' : 'pointer',
               }}
             >
-              {/* Hide database icon if mapped */}
-              {/* {!isMapped && <div style={styles.fieldIcon}>🗄</div>} */}
+              {/* Show database icon only if unmapped */}
               {!isMapped && <StorageIcon style={styles.fieldIcon} />}
 
               <div style={{ flex: 1 }}>
@@ -172,17 +184,16 @@ const PrefillPanel: FC<PrefillPanelProps> = ({
                 )}
               </div>
 
-              {/* If mapped, show an 'X' button on the right */}
+              {/* If mapped, show 'X' button to remove prefill */}
               {isMapped && (
                 <button
                   onClick={(e) => {
-                    e.stopPropagation(); // Prevent row click
+                    e.stopPropagation(); // Prevent modal open
                     handleClear(fieldName);
                   }}
                   style={styles.clearButton}
                 >
-                 
-                 <CancelTwoToneIcon/>
+                  <CancelTwoToneIcon />
                 </button>
               )}
             </div>
@@ -190,7 +201,7 @@ const PrefillPanel: FC<PrefillPanelProps> = ({
         })}
       </div>
 
-      {/* Prefill Modal */}
+      {/* Prefill Selection Modal */}
       {showModal && selectedField && (
         <PrefillModal
           nodeId={getFormLabel(nodeId)}
@@ -209,11 +220,12 @@ const PrefillPanel: FC<PrefillPanelProps> = ({
 
 export default PrefillPanel;
 
+/** Styles */
 const styles: Record<string, React.CSSProperties> = {
   panel: {
     padding: '1rem',
-    borderLeft: '0.0625rem solid #ddd', // ~1px using rem (1px = 0.0625rem at 16px base)\n    width: '100%',
-    maxWidth: '25rem', // 25rem (~400px if 16px base)\n    minWidth: '17.5rem', // 17.5rem (~280px if 16px base)\n    fontFamily: 'Arial, sans-serif',
+    borderLeft: '0.0625rem solid #ddd', 
+    maxWidth: '25rem', 
     display: 'flex',
     flexDirection: 'column',
     boxSizing: 'border-box',
@@ -246,15 +258,13 @@ const styles: Record<string, React.CSSProperties> = {
     border: '0.0625rem dashed #ddd',
   },
   fieldIcon: {
-    width: '1.5rem', // 24px\n    height: '1.5rem',
-    // backgroundColor: '#4664F5',
-    // color: '#fff',
+    width: '1.5rem', 
     borderRadius: '0.25rem',
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
     marginRight: '0.5rem',
-    fontSize: '0.875rem', // ~14px\n  
+    fontSize: '0.875rem', 
     },
   clearButton: {
     background: 'none',
@@ -265,4 +275,3 @@ const styles: Record<string, React.CSSProperties> = {
     fontSize: '1rem',
   },
 };
-
