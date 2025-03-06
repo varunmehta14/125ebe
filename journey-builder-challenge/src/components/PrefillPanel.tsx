@@ -309,6 +309,7 @@ const PrefillPanel: FC<PrefillPanelProps> = ({
   if (!node) return null;
 
   const formFields = node.data.formFields || [];
+  console.log("node", node)
   const prefillConfig = node.data.prefillConfig || {};
 
  

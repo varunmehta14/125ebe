@@ -507,8 +507,289 @@
 
 // src/components/PrefillModal.tsx
 // src/components/PrefillModal.tsx
+// import React, { useState, useEffect } from 'react';
+// import { NodeData } from '../types';
+
+// interface PrefillModalProps {
+//   nodeId: string;
+//   fieldName: string;
+//   dependencyForms: NodeData[];
+//   onClose: () => void;
+//   onSave: (sourceValue: string | null) => void;
+// }
+
+// const PrefillModal: React.FC<PrefillModalProps> = ({
+//   nodeId,
+//   fieldName,
+//   dependencyForms,
+//   onClose,
+//   onSave,
+// }) => {
+//   const [selectedSource, setSelectedSource] = useState<string | null>(null);
+//   const [dataSources, setDataSources] = useState<{ label: string; value: string }[]>([]);
+
+//   useEffect(() => {
+//     const sources: { label: string; value: string }[] = [
+//       { label: 'Global - clientName', value: 'Global.clientName' },
+//     ];
+
+//     // Add direct and transitive dependencies
+//     dependencyForms.forEach((form) => {
+//       if (form.data.formFields) {
+//         form.data.formFields.forEach((field) => {
+//           sources.push({
+//             label: `${form.data.label} - ${field}`,
+//             value: `${form.id}.${field}`,
+//           });
+//         });
+//       }
+//     });
+
+//     setDataSources(sources);
+//   }, [dependencyForms]);
+
+//   return (
+//     <div style={styles.overlay}>
+//       <div style={styles.modal}>
+//         <h4>Select data element to map</h4>
+//         <p>
+//           Configuring prefill for <strong>{fieldName}</strong> on Node <strong>{nodeId}</strong>.
+//         </p>
+
+//         <select
+//           value={selectedSource || ''}
+//           onChange={(e) => setSelectedSource(e.target.value)}
+//           style={styles.selectBox}
+//         >
+//           <option value="">-- Choose a source --</option>
+//           {dataSources.map((ds) => (
+//             <option key={ds.value} value={ds.value}>
+//               {ds.label}
+//             </option>
+//           ))}
+//         </select>
+
+//         <div style={styles.buttonRow}>
+//           <button onClick={() => onSave(selectedSource)} disabled={!selectedSource} style={styles.button}>
+//             Select
+//           </button>
+//           <button onClick={onClose} style={styles.cancelButton}>
+//             Cancel
+//           </button>
+//         </div>
+//       </div>
+//     </div>
+//   );
+// };
+
+// export default PrefillModal;
+
+// // Modal Styles
+// const styles: Record<string, React.CSSProperties> = {
+//   overlay: {
+//     position: 'fixed',
+//     top: 0,
+//     left: 0,
+//     right: 0,
+//     bottom: 0,
+//     backgroundColor: 'rgba(0, 0, 0, 0.3)',
+//     display: 'flex',
+//     alignItems: 'center',
+//     justifyContent: 'center',
+//   },
+//   modal: {
+//     backgroundColor: '#fff',
+//     padding: '1rem',
+//     borderRadius: '8px',
+//     width: '400px',
+//     boxShadow: '0px 4px 6px rgba(0, 0, 0, 0.1)',
+//   },
+//   selectBox: {
+//     width: '100%',
+//     padding: '8px',
+//     marginTop: '10px',
+//   },
+//   buttonRow: {
+//     display: 'flex',
+//     justifyContent: 'space-between',
+//     marginTop: '15px',
+//   },
+//   button: {
+//     backgroundColor: '#4664F5',
+//     color: '#fff',
+//     border: 'none',
+//     padding: '8px 12px',
+//     borderRadius: '4px',
+//     cursor: 'pointer',
+//   },
+//   cancelButton: {
+//     backgroundColor: '#ddd',
+//     border: 'none',
+//     padding: '8px 12px',
+//     borderRadius: '4px',
+//     cursor: 'pointer',
+//   },
+// };
+
+
+// import React, { useState } from 'react';
+// import { NodeData } from '../types';
+// import Modal from 'react-modal';
+// import { SimpleTreeView } from '@mui/x-tree-view/SimpleTreeView';
+// import { TreeItem } from '@mui/x-tree-view/TreeItem';
+
+// interface PrefillModalProps {
+//   nodeId: string;
+//   fieldName: string;
+//   dependencyForms: NodeData[];
+//   onClose: () => void;
+//   onSave: (sourceValue: string | null) => void;
+// }
+
+// const PrefillModal: React.FC<PrefillModalProps> = ({
+//   nodeId,
+//   fieldName,
+//   dependencyForms,
+//   onClose,
+//   onSave,
+// }) => {
+//   const [selectedSource, setSelectedSource] = useState<string | null>(null);
+//   const [searchTerm, setSearchTerm] = useState('');
+
+//   const handleSelect = (_: React.SyntheticEvent, id: string | null) => {
+//     setSelectedSource(id);
+//   };
+
+//   const filteredFields = (fields?: string[]) =>
+//     (fields ?? []).filter((field) =>
+//       field.toLowerCase().includes(searchTerm.toLowerCase())
+//     );
+
+//   return (
+//     <Modal isOpen onRequestClose={onClose} style={styles.modal} ariaHideApp={false}>
+//       <h3>Select data element to map</h3>
+//       <div style={styles.container}>
+//         <div style={styles.leftPane}>
+//           <input
+//             type="text"
+//             placeholder="Search"
+//             style={styles.searchInput}
+//             value={searchTerm}
+//             onChange={(e) => setSearchTerm(e.target.value)}
+//           />
+//           <SimpleTreeView
+//             // selectedItem={selectedSource || ''}
+//             // onSelectedItemChange={handleSelect}
+//           // style={styles.treeView}
+//           >
+//             <TreeItem itemId="Global" label="Global">
+//               <TreeItem itemId="Global.clientName" label="clientName" />
+//             </TreeItem>
+
+//             {dependencyForms.map((form) => (
+//               <TreeItem key={form.id} itemId={form.id} label={form.data.label}>
+//                 {filteredFields(form.data.formFields).map((field) => (
+//                   <TreeItem
+//                     key={`${form.id}.${field}`}
+//                     itemId={`${form.id}.${field}`}
+//                     label={field}
+//                   />
+//                 ))}
+//               </TreeItem>
+//             ))}
+//           </SimpleTreeView>
+//         </div>
+//       </div>
+
+//       <div style={styles.buttonRow}>
+//         <button onClick={onClose} style={styles.cancelButton}>
+//           CANCEL
+//         </button>
+//         <button
+//           onClick={() => onSave(selectedSource)}
+//           disabled={!selectedSource}
+//           style={selectedSource ? styles.selectButton : styles.selectDisabled}
+//         >
+//           SELECT
+//         </button>
+//       </div>
+//     </Modal>
+//   );
+// };
+
+// export default PrefillModal;
+
+// const styles= {
+//   modal: {
+//     overlay: {
+//       backgroundColor: 'rgba(0, 0, 0, 0.5)',
+//       display: 'flex',
+//       alignItems: 'center',
+//       justifyContent: 'center',
+//     },
+//     content: {
+//       width: '600px',
+//       height: '400px',
+//       padding: '20px',
+//       borderRadius: '8px',
+//     },
+//   },
+//   container: {
+//     display: 'flex',
+//     height: '70%',
+//     borderTop: '1px solid #ddd',
+//     marginTop: '10px',
+//   },
+//   leftPane: {
+//     width: '100%',
+//     paddingRight: '10px',
+//     display: 'flex',
+//     flexDirection: 'column' as 'column', // Explicit type assignment
+//   },
+//   searchInput: {
+//     padding: '8px',
+//     marginBottom: '10px',
+//     border: '1px solid #ddd',
+//     borderRadius: '4px',
+//   },
+//   treeView: {
+//     flex: 1,
+//     overflowY: 'auto',
+//   },
+//   buttonRow: {
+//     display: 'flex',
+//     justifyContent: 'flex-end',
+//     marginTop: '10px',
+//   },
+//   selectButton: {
+//     backgroundColor: '#1E88E5',
+//     color: 'white',
+//     border: 'none',
+//     padding: '6px 16px',
+//     borderRadius: '4px',
+//     cursor: 'pointer',
+//   },
+//   selectDisabled: {
+//     backgroundColor: '#ddd',
+//     color: '#999',
+//     border: 'none',
+//     padding: '6px 16px',
+//     borderRadius: '4px',
+//   },
+//   cancelButton: {
+//     marginRight: '10px',
+//     backgroundColor: '#f5f5f5',
+//     border: 'none',
+//     padding: '6px 16px',
+//     borderRadius: '4px',
+//     cursor: 'pointer',
+//   },
+// };
+
 import React, { useState, useEffect } from 'react';
 import { NodeData } from '../types';
+import { SimpleTreeView } from '@mui/x-tree-view/SimpleTreeView';
+import { TreeItem } from '@mui/x-tree-view/TreeItem';
 
 interface PrefillModalProps {
   nodeId: string;
@@ -526,27 +807,10 @@ const PrefillModal: React.FC<PrefillModalProps> = ({
   onSave,
 }) => {
   const [selectedSource, setSelectedSource] = useState<string | null>(null);
-  const [dataSources, setDataSources] = useState<{ label: string; value: string }[]>([]);
 
-  useEffect(() => {
-    const sources: { label: string; value: string }[] = [
-      { label: 'Global - clientName', value: 'Global.clientName' },
-    ];
-
-    // Add direct and transitive dependencies
-    dependencyForms.forEach((form) => {
-      if (form.data.formFields) {
-        form.data.formFields.forEach((field) => {
-          sources.push({
-            label: `${form.data.label} - ${field}`,
-            value: `${form.id}.${field}`,
-          });
-        });
-      }
-    });
-
-    setDataSources(sources);
-  }, [dependencyForms]);
+  const handleSelect = (_: React.SyntheticEvent, itemId: string | null) => {
+    setSelectedSource(itemId);
+  };
 
   return (
     <div style={styles.overlay}>
@@ -556,21 +820,35 @@ const PrefillModal: React.FC<PrefillModalProps> = ({
           Configuring prefill for <strong>{fieldName}</strong> on Node <strong>{nodeId}</strong>.
         </p>
 
-        <select
-          value={selectedSource || ''}
-          onChange={(e) => setSelectedSource(e.target.value)}
-          style={styles.selectBox}
-        >
-          <option value="">-- Choose a source --</option>
-          {dataSources.map((ds) => (
-            <option key={ds.value} value={ds.value}>
-              {ds.label}
-            </option>
-          ))}
-        </select>
+        <div style={{ height: 200, overflowY: 'auto' }}>
+          <SimpleTreeView
+            selectedItems={selectedSource || ''}
+            onSelectedItemsChange={handleSelect}
+          >
+            <TreeItem itemId="Global" label="Global">
+              <TreeItem itemId="Global.clientName" label="clientName" />
+            </TreeItem>
+
+            {dependencyForms.map((form) => (
+              <TreeItem key={form.id} itemId={form.id} label={form.data.label}>
+                {form.data.formFields?.map((field) => (
+                  <TreeItem
+                    key={`${form.id}.${field}`}
+                    itemId={`${form.id}.${field}`}
+                    label={field}
+                  />
+                ))}
+              </TreeItem>
+            ))}
+          </SimpleTreeView>
+        </div>
 
         <div style={styles.buttonRow}>
-          <button onClick={() => onSave(selectedSource)} disabled={!selectedSource} style={styles.button}>
+          <button
+            onClick={() => onSave(selectedSource)}
+            disabled={!selectedSource}
+            style={styles.button}
+          >
             Select
           </button>
           <button onClick={onClose} style={styles.cancelButton}>
@@ -603,11 +881,6 @@ const styles: Record<string, React.CSSProperties> = {
     borderRadius: '8px',
     width: '400px',
     boxShadow: '0px 4px 6px rgba(0, 0, 0, 0.1)',
-  },
-  selectBox: {
-    width: '100%',
-    padding: '8px',
-    marginTop: '10px',
   },
   buttonRow: {
     display: 'flex',
