@@ -362,11 +362,20 @@ const PrefillPanel: FC<PrefillPanelProps> = ({
     setSelectedField(null);
   };
 
+  // Function to get form label from node ID
+  const getFormLabel = (formId: string): string => {
+    const form = nodes.find((n) => n.id === formId);
+    return form ? form.data.label : formId; // Fallback to ID if no label is found
+  };
+
+
   return (
     <div style={styles.panel}>
       <div style={styles.headerRow}>
         <h4 style={{ margin: 0 }}>Prefill</h4>
-        <button onClick={onClose} style={styles.closeButton}>Close</button>
+        <button onClick={onClose} style={styles.closeButton}>
+          Close
+        </button>
       </div>
 
       <p style={styles.subtitle}>Prefill fields for this form</p>
@@ -374,14 +383,19 @@ const PrefillPanel: FC<PrefillPanelProps> = ({
       <div style={{ marginTop: '1rem' }}>
         {formFields.map((fieldName) => {
           const configValue = prefillConfig[fieldName];
+
+          let displayLabel = configValue;
+          if (configValue && configValue.includes('.')) {
+            const [sourceNodeId, field] = configValue.split('.');
+            displayLabel = `${getFormLabel(sourceNodeId)}.${field}`;
+          }
+
           return (
             <div key={fieldName} style={styles.fieldRow}>
               <div style={styles.fieldIcon}>🗄</div>
               <div style={{ flex: 1 }}>
                 {configValue ? (
-                  <span style={{ fontWeight: 500 }}>
-                    {fieldName}: {configValue}
-                  </span>
+                  <span style={{ fontWeight: 500 }}>{fieldName}:{displayLabel}</span>
                 ) : (
                   <span style={{ color: '#555' }}>{fieldName}</span>
                 )}
@@ -402,7 +416,7 @@ const PrefillPanel: FC<PrefillPanelProps> = ({
 
       {showModal && selectedField && (
         <PrefillModal
-          nodeId={nodeId}
+          nodeId={getFormLabel(nodeId)}
           fieldName={selectedField}
           dependencyForms={dependencyForms} // Pass computed dependencies
           onClose={() => {

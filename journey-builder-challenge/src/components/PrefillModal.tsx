@@ -811,6 +811,7 @@ const PrefillModal: React.FC<PrefillModalProps> = ({
   const handleSelect = (_: React.SyntheticEvent, itemId: string | null) => {
     setSelectedSource(itemId);
   };
+  
 
   return (
     <div style={styles.overlay}>
@@ -825,8 +826,12 @@ const PrefillModal: React.FC<PrefillModalProps> = ({
             selectedItems={selectedSource || ''}
             onSelectedItemsChange={handleSelect}
           >
-            <TreeItem itemId="Global" label="Global">
-              <TreeItem itemId="Global.clientName" label="clientName" />
+            <TreeItem itemId="Global1" label="Action Properties">
+              <TreeItem itemId="Global1.clientName" label="clientName" />
+            </TreeItem>
+
+            <TreeItem itemId="Global2" label="Client Organization Properties">
+              <TreeItem itemId="Global2.clientEmail" label="clientEmail" />
             </TreeItem>
 
             {dependencyForms.map((form) => (
