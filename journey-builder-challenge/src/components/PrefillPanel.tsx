@@ -285,21 +285,39 @@ const PrefillPanel: FC<PrefillPanelProps> = ({
 }) => {
 
  // Traverse DAG to find direct & transitive dependencies
- useEffect(() => {
-    const getDependencies = (currentNodeId: string, visited = new Set()): NodeData[] => {
-      if (visited.has(currentNodeId)) return [];
-      visited.add(currentNodeId);
+//  useEffect(() => {
+//     const getDependencies = (currentNodeId: string, visited = new Set()): NodeData[] => {
+//       if (visited.has(currentNodeId)) return [];
+//       visited.add(currentNodeId);
 
-      const directParents = edges
-        .filter((e) => e.target === currentNodeId)
-        .map((e) => nodes.find((n) => n.id === e.source))
-        .filter((n): n is NodeData => !!n); // Ensure nodes are valid
+//       const directParents = edges
+//         .filter((e) => e.target === currentNodeId)
+//         .map((e) => nodes.find((n) => n.id === e.source))
+//         .filter((n): n is NodeData => !!n); // Ensure nodes are valid
 
-      return [...directParents, ...directParents.flatMap((p) => getDependencies(p.id, visited))];
-    };
+//       return [...directParents, ...directParents.flatMap((p) => getDependencies(p.id, visited))];
+//     };
 
-    setDependencyForms(getDependencies(nodeId));
-  }, [nodeId, nodes, edges]);
+//     setDependencyForms(getDependencies(nodeId));
+//   }, [nodeId, nodes, edges]);
+
+useEffect(() => {
+  const getDependencies = (currentNodeId: string, visited = new Set<string>()): NodeData[] => {
+    if (visited.has(currentNodeId)) return [];
+    visited.add(currentNodeId);
+
+    const directParents = edges
+      .filter((e) => e.target === currentNodeId && !visited.has(e.source)) // Ensure the source is not already visited
+      .map((e) => nodes.find((n) => n.id === e.source))
+      .filter((n): n is NodeData => !!n); // Ensure nodes are valid
+
+    return [...directParents, ...directParents.flatMap((p) => getDependencies(p.id, visited))];
+  };
+
+  const uniqueDependencies = Array.from(new Map(getDependencies(nodeId).map(node => [node.id, node])).values());
+
+  setDependencyForms(uniqueDependencies);
+}, [nodeId, nodes, edges]);
   const [showModal, setShowModal] = useState(false);
   const [selectedField, setSelectedField] = useState<string | null>(null);
   const [dependencyForms, setDependencyForms] = useState<NodeData[]>([]);
