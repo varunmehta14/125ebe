@@ -1,4 +1,3 @@
-// src/components/Graph.tsx
 import React, { FC, useCallback } from 'react';
 import {
   ReactFlow,
@@ -42,7 +41,7 @@ const Graph: FC<GraphProps> = ({ nodes, edges, onNodeSelect }) => {
         nodeTypes={nodeTypes}
         onNodeClick={handleNodeClick}
         fitView
-        fitViewOptions={{ padding: 0.2 }}
+        fitViewOptions={{ padding: 0.4 }}
         defaultEdgeOptions={{
           type: 'smoothstep',
           style: { stroke: '#9CA8B3' },
